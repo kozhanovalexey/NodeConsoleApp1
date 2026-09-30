@@ -1,0 +1,53 @@
+.app-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.container-box {
+  width: 45%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.list-scroll {
+  height: 400px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  margin-top: 10px;
+  padding: 5px;
+}
+
+.item-row {
+  padding: 10px;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  user-select: none;
+}
+
+.item-row:hover {
+  background-color: #f0f0f0;
+}
+
+.drag-item {
+  cursor: grab;
+  background-color: #e6f7ff;
+  border-color: #91d5ff;
+}
+
+input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  margin-bottom: 5px;
+}
+
+button {
+  padding: 8px 12px;
+  cursor: pointer;
+}
