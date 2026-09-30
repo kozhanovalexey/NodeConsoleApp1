@@ -27,7 +27,7 @@ function App() {
             setIsLoading(true);
         }
         try {
-            const res = await fetch('http://localhost:5000/api/data', {
+            const res = await fetch('/api/data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ leftFilter, rightFilter, leftPage, rightPage })
@@ -87,7 +87,7 @@ function App() {
         e.preventDefault();
         if (!newIdInput) return;
         try {
-            const res = await fetch('http://localhost:5000/api/items/add', {
+            const res = await fetch('/api/items/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: newIdInput })
@@ -109,7 +109,7 @@ function App() {
         });
 
         try {
-            await fetch('http://localhost:5000/api/selection/update', {
+            await fetch('/api/selection/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'select', id })
@@ -126,7 +126,7 @@ function App() {
         });
 
         try {
-            await fetch('http://localhost:5000/api/selection/update', {
+            await fetch('/api/selection/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'unselect', id })
@@ -167,7 +167,7 @@ function App() {
         });
 
         try {
-            await fetch('http://localhost:5000/api/selection/update', {
+            await fetch('/api/selection/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'reorder', orderIds: updatedIds })
