@@ -18,6 +18,7 @@ function App() {
     const [draggedId, setDraggedId] = useState(null);
 
     const [isLoading, setIsLoading] = useState(false);
+    const [pendingIds, setPendingIds] = useState(new Map());
 
     const leftScrollContainer = useRef(null);
     const rightScrollContainer = useRef(null);
@@ -102,10 +103,10 @@ function App() {
     };
 
     const selectItem = async (id) => {
-        setLeftItems(prev => prev.filter(item => item.id !== id));
-        setRightItems(prev => {
-            if (prev.some(item => item.id === id)) return prev;
-            return [...prev, { id, selected: true }];
+        setPendingIds(prev => {
+            const next = new Map(prev);
+            next.set(id, 'select');
+            return next;
         });
 
         try {
@@ -118,11 +119,10 @@ function App() {
     };
 
     const unselectItem = async (id) => {
-        setRightItems(prev => prev.filter(item => item.id !== id));
-        setLeftItems(prev => {
-            if (prev.some(item => item.id === id)) return prev;
-            const updated = [{ id, selected: false }, ...prev];
-            return updated.sort((a, b) => a.id - b.id);
+        setPendingIds(prev => {
+            const next = new Map(prev);
+            next.set(id, 'unselect');
+            return next;
         });
 
         try {
@@ -176,6 +176,49 @@ function App() {
         setDraggedId(null);
     };
 
+    useEffect(() => {
+        if (pendingIds.size === 0) return;
+
+        setPendingIds(prev => {
+            const next = new Map(prev);
+            let changed = false;
+
+            for (const [id, action] of next.entries()) {
+                const inLeft = leftItems.some(item => item.id === id);
+                const inRight = rightItems.some(item => item.id === id);
+
+                if (action === 'select' && inRight) {
+                    next.delete(id);
+                    changed = true;
+                } else if (action === 'unselect' && inLeft) {
+                    next.delete(id);
+                    changed = true;
+                }
+            }
+
+            return changed ? next : prev;
+        });
+    }, [leftItems, rightItems, pendingIds]);
+
+    const displayLeftItems = leftItems
+        .filter(item => !pendingIds.has(item.id))
+        .concat(
+            Array.from(pendingIds.entries())
+                .filter(([_, action]) => action === 'unselect')
+                .map(([id]) => ({ id, selected: false }))
+        )
+        .filter((item, index, self) => self.findIndex(t => t.id === item.id) === index)
+        .sort((a, b) => Number(a.id) - Number(b.id));
+
+    const displayRightItems = rightItems
+        .filter(item => !pendingIds.has(item.id))
+        .concat(
+            Array.from(pendingIds.entries())
+                .filter(([_, action]) => action === 'select')
+                .map(([id]) => ({ id, selected: true }))
+        )
+        .filter((item, index, self) => self.findIndex(t => t.id === item.id) === index);
+
     return (
         <div className="app-container">
             <div className="container-box">
@@ -200,7 +243,7 @@ function App() {
                     ref={leftScrollContainer}
                     onScroll={handleLeftScroll}
                 >
-                    {leftItems.map(item => (
+                    {displayLeftItems.map(item => (
                         <div key={`left-${item.id}`} className="item-row" onClick={() => selectItem(item.id)}>
                             ID: {item.id}
                         </div>
@@ -225,7 +268,7 @@ function App() {
                     onScroll={handleRightScroll}
                     style={{ marginTop: '50px' }}
                 >
-                    {rightItems.map(item => (
+                    {displayRightItems.map(item => (
                         <div
                             key={`right-${item.id}`}
                             className="item-row drag-item"
@@ -235,7 +278,7 @@ function App() {
                             onDrop={() => handleDrop(item.id)}
                             onClick={() => unselectItem(item.id)}
                         >
-                            ID: {item.id} ☰
+                            ID: {item.id}
                         </div>
                     ))}
                     <div style={{ height: '30px', padding: '5px', textAlign: 'center', color: '#888' }}>

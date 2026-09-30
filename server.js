@@ -45,35 +45,50 @@ setInterval(() => {
     const selectionUpdates = currentQueue.filter(req => req.type === 'update_selection');
 
     if (selectionUpdates.length > 0) {
+        let orderMap = new Map();
+        let hasReorder = false;
+
         for (const req of selectionUpdates) {
             const { action, id, orderIds } = req.data;
 
             if (action === 'select') {
                 const item = itemsDb.find(i => i.id === id);
-                if (item) {
-                    item.selected = true;
-                }
+                if (item) item.selected = true;
             } else if (action === 'unselect') {
                 const item = itemsDb.find(i => i.id === id);
-                if (item) {
-                    item.selected = false;
-                }
+                if (item) item.selected = false;
             } else if (action === 'reorder' && orderIds) {
-                const orderMap = new Map();
                 orderIds.forEach((orderId, index) => {
                     orderMap.set(orderId, index);
                 });
-
-                itemsDb.sort((a, b) => {
-                    const aInOrder = orderMap.has(a.id);
-                    const bInOrder = orderMap.has(b.id);
-
-                    if (aInOrder && bInOrder) return orderMap.get(a.id) - orderMap.get(b.id);
-                    if (aInOrder) return 1;
-                    if (bInOrder) return -1;
-                    return 0;
-                });
+                hasReorder = true;
             }
+        }
+
+        if (hasReorder) {
+            itemsDb.sort((a, b) => {
+                const aInOrder = orderMap.has(a.id);
+                const bInOrder = orderMap.has(b.id);
+
+                if (aInOrder && bInOrder) return orderMap.get(a.id) - orderMap.get(b.id);
+                if (aInOrder) return 1;
+                if (bInOrder) return -1;
+
+                return a.id - b.id;
+            });
+        } else {
+            const currentRightIds = itemsDb.filter(item => item.selected).map(item => item.id);
+            const currentRightMap = new Map();
+            currentRightIds.forEach((id, index) => {
+                currentRightMap.set(id, index);
+            });
+
+            itemsDb.sort((a, b) => {
+                if (a.selected && b.selected) return currentRightMap.get(a.id) - currentRightMap.get(b.id);
+                if (a.selected) return 1;
+                if (b.selected) return -1;
+                return a.id - b.id;
+            });
         }
     }
 
