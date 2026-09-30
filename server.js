@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -119,7 +120,7 @@ app.post('/api/items/add', (req, res) => {
     const numericId = parseInt(id, 10);
 
     if (isNaN(numericId)) {
-        return res.status(400).json({ error: 'Not valid ID' });
+        return res.status(400).json({ error: 'Invalid ID' });
     }
 
     const existsInDb = itemsDb.some(item => item.id === numericId);
@@ -151,6 +152,13 @@ app.post('/api/selection/update', (req, res) => {
     });
 });
 
-app.listen(5000, () => {
-    console.log('Server runs on port 5000');
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('/*catchall', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server runs on port ${PORT}`);
 });
